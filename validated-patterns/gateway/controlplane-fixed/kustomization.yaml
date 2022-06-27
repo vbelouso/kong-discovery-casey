@@ -20,24 +20,24 @@ patches:
     metadata:
       name: kong-cp
     spec:
+      syncPolicy:
+        syncOptions:
+        - FailOnSharedResource=false
       source:
         helm:
           values: |
-            ingressController:
-              enabled: false
             image:
               repository: kong/kong-gateway
               tag: 2.8.0.0-alpine
               unifiedRepoTag: kong/kong-gateway:2.8.0.0-alpine
             env:
-              database: "off"
-              role: data_plane
+              database: postgres
+              role: control_plane
               cluster_cert: /etc/secrets/kong-cluster-cert/tls.crt
               cluster_cert_key: /etc/secrets/kong-cluster-cert/tls.key
-              lua_ssl_trusted_certificate: /etc/secrets/kong-cluster-cert/tls.crt
-              cluster_control_plane: kong-kong-cluster.kong.svc.cluster.local:8005
-              cluster_telemetry_endpoint: kong-kong-clustertelemetry.kong.svc.cluster.local:8006
-              status_listen: 0.0.0.0:8100
+              cluster_telemetry_listen: 0.0.0.0:8006
+            ingressController:
+              enabled: false
             proxy:
               enabled: true
               type: ClusterIP
@@ -46,6 +46,8 @@ patches:
             enterprise:
               enabled: true
               license_secret: kong-enterprise-license
+              vitals:
+                enabled: false
               portal:
                 enabled: false
               rbac:
@@ -53,10 +55,16 @@ patches:
               smtp:
                 enabled: false
             admin:
-              enabled: false
-            manager:
-              enabled: false
+              enabled: true
+              http:
+                enabled: true
+            cluster:
+              enabled: true
+              tls:
+                enabled: true
+            postgresql:
+              enabled: true
             portal:
               enabled: false
             portalapi:
-              enabled: false  
+              enabled: false

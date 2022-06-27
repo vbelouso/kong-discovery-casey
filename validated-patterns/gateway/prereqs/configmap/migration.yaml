@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kong-kong-bash-wait-for-postgres
+  namespace: kong
+data:
+  wait.sh: |
+    until timeout 2 bash -c "9<>/dev/tcp/${KONG_PG_HOST}/${KONG_PG_PORT}"
+      do echo "waiting for db - trying ${KONG_PG_HOST}:${KONG_PG_PORT}"
+      sleep 2
+    done
