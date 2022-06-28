@@ -6,15 +6,18 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: 'https://github.com/vbelouso/kong-discovery-casey.git'
+    repoURL: "https://github.com/vbelouso/kong-discovery-casey.git"
     path: kong
     targetRevision: kong-chart
     helm:
       valueFiles:
         - values-cp.yaml
   destination:
-    server: 'https://kubernetes.default.svc'
+    server: "https://kubernetes.default.svc"
     namespace: kong
   syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
     syncOptions:
       - CreateNamespace=true
