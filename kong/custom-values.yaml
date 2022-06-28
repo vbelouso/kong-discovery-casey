@@ -1,0 +1,42 @@
+image:
+  repository: kong/kong-gateway
+  tag: 2.8.0.0-alpine
+  unifiedRepoTag: kong/kong-gateway:2.8.0.0-alpine
+env:
+  database: postgres
+  role: control_plane
+  cluster_cert: /etc/secrets/kong-cluster-cert/tls.crt
+  cluster_cert_key: /etc/secrets/kong-cluster-cert/tls.key
+  cluster_telemetry_listen: 0.0.0.0:8006
+ingressController:
+  enabled: false
+proxy:
+  enabled: true
+  type: ClusterIP
+secretVolumes:
+  - kong-cluster-cert
+enterprise:
+  enabled: true
+  license_secret: kong-enterprise-license
+  vitals:
+    enabled: false
+  portal:
+    enabled: false
+  rbac:
+    enabled: false
+  smtp:
+    enabled: false
+admin:
+  enabled: true
+  http:
+    enabled: true
+cluster:
+  enabled: true
+  tls:
+    enabled: true
+postgresql:
+  enabled: true
+portal:
+  enabled: false
+portalapi:
+  enabled: false

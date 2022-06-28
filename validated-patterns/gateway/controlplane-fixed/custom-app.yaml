@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kong
+  namespace: openshift-gitops
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/vbelouso/kong-discovery-casey.git'
+    path: kong
+    targetRevision: kong-chart
+    helm:
+      valueFiles:
+        - values-cp.yaml
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: kong
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
