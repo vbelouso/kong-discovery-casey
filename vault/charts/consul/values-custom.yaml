@@ -1,0 +1,7 @@
+global:
+  datacenter: vault-argocd
+  openshift:
+    enabled: true
+
+client:
+  enabled: true

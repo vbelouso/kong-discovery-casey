@@ -1,0 +1,29 @@
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: vault-init
+  namespace: vault
+rules:
+  - verbs:
+      - get
+      - list
+      - create
+    apiGroups:
+      - ""
+    resources:
+      - pods
+      - pods/exec
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: vault-init-rb
+  namespace: vault
+subjects:
+  - kind: ServiceAccount
+    name: vault-init
+    namespace: vault
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: vault-init

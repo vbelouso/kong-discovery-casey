@@ -1,0 +1,47 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: vault-init
+  namespace: vault
+spec:
+  template:
+    metadata:
+      name: vault-init
+    spec:
+      serviceAccountName: vault-init
+      containers:
+      - image: registry.access.redhat.com/ubi8:8.6-855
+        name: vault-init
+        command:
+        - /bin/sh
+        - -c
+        - |
+          echo "Prepare working directory"
+          mkdir -p /tmp/vault-init || exit 1
+          cd /tmp/vault-init || exit 1
+          export PATH="/tmp/vault-init:$PATH"
+          export VAULT_KEYTHRESHOLDS=3
+          KEYS=$(mktemp -t tmp.XXXXXXXXXX)
+          echo "Download prereqs"
+          curl -ssL -o jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
+          curl -Os https://mirror.openshift.com/pub/openshift-v4/$(uname -m)/clients/ocp/stable/openshift-client-linux.tar.gz
+          tar -xf openshift-client-linux.tar.gz oc kubectl
+          rm -f openshift-client-linux.tar.gz
+          chmod +x jq oc kubectl
+          echo "Initialize vault"
+          oc exec vault-0 -- vault operator init --format json | jq '.' | cat >$KEYS
+          for pod in $(oc get pods -n vault -l component=server -o jsonpath='{.items[*].metadata.name}');
+          do
+            echo "Working with $pod"
+            for i in $(seq 1 $VAULT_KEYTHRESHOLDS)
+            do
+              echo "Unseal Key #$i:"
+              oc exec $pod -- vault operator unseal $(cat $KEYS | jq -r '.unseal_keys_b64'[$i])
+              sleep 1
+            done
+          done
+          oc exec vault-0 -- vault status
+          echo "Vault initialization done"
+          sleep infinity
+      restartPolicy: Never
+
